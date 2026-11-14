@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#D97706" />
+  <meta name="description" content="血液透析室護理端｜上機前 UFR 安全檢核、互動式血管通路穿刺地圖與 Focus Charting (DAR) 交班紀錄系統" />
+  <title>血液透析室護理端｜上機前 UFR 安全檢核與血管通路評估</title>
+  <style>
+    :root {
+      --bg-main: #FDFBF7;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F7F4EF;
+      --bg-warm-tint: #FEF3C7;
+      --primary: #D97706;
+      --primary-hover: #B45309;
+      --coral: #E06D53;
+      --coral-bg: #FFF1EE;
+      --sage: #3F7D58;
+      --sage-bg: #ECFDF5;
+      --text-main: #2D2522;
+      --text-muted: #6E625D;
+      --border: #E6DFD5;
+      --shadow: 0 4px 16px rgba(45, 37, 34, 0.06);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.55;
+      padding-bottom: 48px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #FFF8EB 0%, #F7F4EF 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.28);
+    }
+    .brand h1 { font-size: 1.18rem; font-weight: 700; color: var(--text-main); }
+    .brand p { font-size: 0.82rem; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: all 0.18s ease;
+    }
+    button:hover { background: var(--bg-subtle); }
+    button.btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    button.btn-coral {
+      background: var(--coral);
+      color: #fff;
+      border-color: var(--coral);
+    }
+    button.btn-coral:hover { opacity: 0.92; }
+
+    .container {
+      max-width: 1380px;
+      margin: 22px auto 0;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1.38fr 0.92fr;
+      gap: 22px;
+      align-items: start;
+    }
+    @media (max-width: 1040px) { .container { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+    }
+    .tag-amber { background: #FEF3C7; color: #92400E; }
+    .tag-coral { background: var(--coral-bg); color: #B91C1C; }
+    .tag-sage { background: var(--sage-bg); color: #065F46; }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .field input, .field select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.14);
+    }
+
+    .check-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .check-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+    }
+    .check-pill input { accent-color: var(--primary); width: 15px; height: 15px; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    @media (max-width: 640px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-box {
+      background: var(--bg-subtle);
+      border-radius: 11px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .kpi-box.warn { background: #FEF3C7; border-color: #FCD34D; }
+    .kpi-box.danger { background: var(--coral-bg); border-color: #F8B4A6; }
+    .kpi-box.ok { background: var(--sage-bg); border-color: #A7F3D0; }
+    .kpi-label { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; }
+    .kpi-val { font-size: 1.24rem; font-weight: 800; margin-top: 2px; }
+    .kpi-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; }
+
+    .advice-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .advice-item {
+      padding: 10px 13px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      background: var(--bg-subtle);
+      border-left: 4px solid var(--primary);
+    }
+    .advice-item.alert { background: var(--coral-bg); border-left-color: var(--coral); }
+    .advice-item.warn { background: #FEF3C7; border-left-color: var(--primary); }
+    .advice-item.good { background: var(--sage-bg); border-left-color: var(--sage); }
+
+    /* Tabs for Access Type */
+    .tab-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Interactive SVG Vessel Map */
+    .vessel-box {
+      margin-top: 14px;
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .vessel-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .mode-pill {
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .mode-pill.active-a { background: #FEE2E2; border-color: #DC2626; color: #991B1B; }
+    .mode-pill.active-v { background: #DBEAFE; border-color: #2563EB; color: #1E40AF; }
+    svg#armMap {
+      width: 100%;
+      height: 175px;
+      display: block;
+      border-radius: 10px;
+      background: #FFFDF9;
+      border: 1px dashed #D6CEC2;
+      cursor: crosshair;
+    }
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .sticky-panel { position: sticky; top: 86px; }
+    textarea#darOutput {
+      width: 100%;
+      min-height: 470px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      color: var(--text-main);
+      padding: 14px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    .privacy-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--text-main);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-badge">RN</div>
+        <div>
+          <h1>血液透析室護理端｜上機前 UFR 安全檢核與血管通路評估</h1>
+          <p>純前端零個資運算 • 超濾率安全警示 • 互動式穿刺輪替圖譜 • Focus Charting (DAR) 交班生成</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" onclick="loadHighRiskSample()">載入高風險範例</button>
+        <button type="button" onclick="resetForm()">重設預設值</button>
+        <button type="button" class="btn-primary" onclick="copyDAR()">一鍵複製護理紀錄</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 左側：護理檢核與通路評估 -->
+    <div>
+      <!-- 1. 上機前脫水與 UFR 安全檢核 -->
+      <section class="card">
+        <div class="card-title">
+          <span>1. 上機前體重、脫水量與超濾率（UFR）安全檢核</span>
+          <span class="tag tag-amber">安全警戒：UFR ≤ 10 mL/kg/hr | IDWG ≤ 5% DW</span>
+        </div>
+
+        <div class="grid-4">
+          <div class="field">
+            <label>乾體重 Dry Weight (kg)</label>
+            <input type="number" id="dw" value="60.0" step="0.1" min="25" max="180" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>上機前體重 Pre-HD (kg)</label>
+            <input type="number" id="preW" value="62.1" step="0.1" min="25" max="190" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>預計透析時間 (小時)</label>
+            <input type="number" id="hours" value="4.0" step="0.5" min="2.0" max="6.0" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>進食＋沖管回血水量 (mL)</label>
+            <input type="number" id="extraMl" value="300" step="50" min="0" max="1500" oninput="recalc()" />
+          </div>
+        </div>
+
+        <div class="grid-4" style="margin-top: 12px;">
+          <div class="field">
+            <label>上機前收縮壓 SBP (mmHg)</label>
+            <input type="number" id="sbp" value="136" step="1" min="60" max="250" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>上機前舒張壓 DBP (mmHg)</label>
+            <input type="number" id="dbp" value="78" step="1" min="30" max="150" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>上機前脈搏 HR (bpm)</label>
+            <input type="number" id="hr" value="76" step="1" min="35" max="180" oninput="recalc()" />
+          </div>
+          <div class="field">
+            <label>透析液溫度設定 (°C)</label>
+            <select id="dialysateTemp" onchange="recalc()">
+              <option value="36.5" selected>標準常溫 36.5°C</option>
+              <option value="36.0">微低溫 36.0°C</option>
+              <option value="35.5">低溫防護 35.5°C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="check-group">
+          <label class="check-pill"><input type="checkbox" id="symDyspnea" onchange="recalc()" /> 端坐呼吸 / 肺部濕囉音</label>
+          <label class="check-pill"><input type="checkbox" id="symEdema" onchange="recalc()" /> 下肢水腫 (≥ 2+)</label>
+          <label class="check-pill"><input type="checkbox" id="symDizzy" onchange="recalc()" /> 頭暈 / 姿態性低血壓史</label>
+          <label class="check-pill"><input type="checkbox" id="symChest" onchange="recalc()" /> 胸悶 / 近期心絞痛</label>
+          <label class="check-pill"><input type="checkbox" id="mdNotified" onchange="recalc()" /> 已通報值班/主治醫師確認脫水目標</label>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-box" id="boxIdwg">
+            <div class="kpi-label">透析間體重增加 (IDWG)</div>
+            <div class="kpi-val" id="valIdwg">--</div>
+            <div class="kpi-sub" id="subIdwg">佔乾體重 --%</div>
+          </div>
+          <div class="kpi-box">
+            <div class="kpi-label">總設定脫水量 (Total UF)</div>
+            <div class="kpi-val" id="valTotalUf">--</div>
+            <div class="kpi-sub" id="subUfBreak">淨脫水 -- + 沖管 --</div>
+          </div>
+          <div class="kpi-box" id="boxUfr">
+            <div class="kpi-label">每小時超濾率 (UFR)</div>
+            <div class="kpi-val" id="valUfr">--</div>
+            <div class="kpi-sub" id="subUfrStatus">mL/kg/hr</div>
+          </div>
+          <div class="kpi-box" id="boxBp">
+            <div class="kpi-label">上機前血壓 / MAP</div>
+            <div class="kpi-val" id="valBp">--</div>
+            <div class="kpi-sub" id="subMap">MAP -- mmHg</div>
+          </div>
+        </div>
+
+        <div class="advice-list" id="ufrAdvice"></div>
+      </section>
+
+      <!-- 2. 血管通路評估與穿刺路徑地圖 -->
+      <section class="card">
+        <div class="card-title">
+          <span>2. 血管通路（AVF / AVG / Permcath）評估與穿刺輪替地圖</span>
+          <span class="tag tag-sage">Look • Listen • Feel 物理評估</span>
+        </div>
+
+        <div class="tab-bar">
+          <button type="button" class="tab-btn active" id="tabAvf" onclick="setAccessType('AVF')">自體動靜脈廔管 (AVF)</button>
+          <button type="button" class="tab-btn" id="tabAvg" onclick="setAccessType('AVG')">人工血管 (AVG)</button>
+          <button type="button" class="tab-btn" id="tabCvc" onclick="setAccessType('Permcath')">雙腔靜脈導管 (Permcath)</button>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label>通路部位</label>
+            <select id="accessSite" onchange="recalc()">
+              <option value="左前臂 Radiocephalic">左前臂 (Left Forearm)</option>
+              <option value="左上臂 Brachiocephalic">左上臂 (Left Upper Arm)</option>
+              <option value="右前臂 Radiocephalic">右前臂 (Right Forearm)</option>
+              <option value="右上臂 Brachiocephalic">右上臂 (Right Upper Arm)</option>
+              <option value="右內頸靜脈 Right IJV">右內頸靜脈 (Right IJV)</option>
+              <option value="左內頸靜脈 Left IJV">左內頸靜脈 (Left IJV)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>穿刺針號 / 導管流速上限</label>
+            <select id="needleGauge" onchange="recalc()">
+              <option value="16G">16G 穿刺針 (建議 Qb 250–320)</option>
+              <option value="15G">15G 穿刺針 (建議 Qb > 320)</option>
+              <option value="17G">17G 穿刺針 (新廔管 / Qb ≤ 250)</option>
+              <option value="CVC Lumen">CVC 雙腔導管管腔</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>設定血液流速 Qb (mL/min)</label>
+            <input type="number" id="qb" value="280" step="10" min="120" max="450" oninput="recalc()" />
+          </div>
+        </div>
+
+        <!-- AVF / AVG 專屬欄位與互動 SVG 圖譜 -->
+        <div id="avfSection">
+          <div class="grid-4" style="margin-top: 12px;">
+            <div class="field">
+              <label>視診 (Look) 外觀</label>
+              <select id="lookStatus" onchange="recalc()">
+                <option value="normal">完整無紅腫滲液</option>
+                <option value="hematoma">局部瘀青 / 血腫</option>
+                <option value="redness">紅腫熱痛 / 疑似感染</option>
+                <option value="aneurysm">局部假性動脈瘤變薄</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>觸診震顫 (Feel - Thrill)</label>
+              <select id="thrillStatus" onchange="recalc()">
+                <option value="continuous">連續強震顫 (Continuous)</option>
+                <option value="systolic">僅收縮期震顫 / 搏動增強</option>
+                <option value="weak">震顫微弱 (Weak)</option>
+                <option value="absent">無震顫 (Absent - 疑似栓塞)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>聽診雜音 (Listen - Bruit)</label>
+              <select id="bruitStatus" onchange="recalc()">
+                <option value="low_pitch">低頻連續呼呼聲 (正常)</option>
+                <option value="high_pitch">高頻尖銳吹哨音 (疑似狹窄)</option>
+                <option value="absent">無雜音 (Absent)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>抬臂塌陷測試 (Arm Elevation)</label>
+              <select id="armElevate" onchange="recalc()">
+                <option value="collapse">正常塌陷 (無流出道狹窄)</option>
+                <option value="persistent">持續鼓脹不塌陷 (流出道狹窄)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top: 12px;">
+            <div class="field">
+              <label>預估/上機動脈壓 AP (mmHg，正常 -80 ~ -200)</label>
+              <input type="number" id="apPress" value="-140" step="5" min="-350" max="0" oninput="recalc()" />
+            </div>
+            <div class="field">
+              <label>預估/上機靜脈壓 VP (mmHg，正常 +80 ~ +180)</label>
+              <input type="number" id="vpPress" value="135" step="5" min="0" max="350" oninput="recalc()" />
+            </div>
+          </div>
+
+          <!-- 互動式手臂穿刺點圖譜 -->
+          <div class="vessel-box">
+            <div class="vessel-toolbar">
+              <div style="font-size: 0.84rem; font-weight: 700;">
+                互動式繩梯法（Rope-Ladder）穿刺點定位圖：<span id="distBadge" class="tag tag-sage">A-V 針尖距離：8.2 cm (安全 ≥ 5 cm)</span>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="mode-pill active-a" id="btnPickA" onclick="setPickMode('A')">點選設定 A 端 (動脈端)</button>
+                <button type="button" class="mode-pill" id="btnPickV" onclick="setPickMode('V')">點選設定 V 端 (靜脈端)</button>
+              </div>
+            </div>
+            <svg id="armMap" viewBox="0 0 600 175" onclick="handleMapClick(event)">
+              <!-- Forearm silhouette -->
+              <rect x="20" y="24" width="560" height="126" rx="63" fill="#F9EFE6" stroke="#DFCBB8" stroke-width="2" />
+              <!-- Anastomosis marker -->
+              <circle cx="75" cy="87" r="14" fill="#FEF3C7" stroke="#D97706" stroke-width="2" />
+              <text x="75" y="91" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400E">吻合口</text>
+              <!-- Main vessel path -->
+              <line x1="89" y1="87" x2="545" y2="87" stroke="#E06D53" stroke-width="14" stroke-linecap="round" opacity="0.28" />
+              <line x1="89" y1="87" x2="545" y2="87" stroke="#C2410C" stroke-width="3" stroke-dasharray="6,4" />
+              <!-- Old aneurysm / avoid zone -->
+              <ellipse cx="290" cy="87" rx="26" ry="16" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="3,2" />
+              <text x="290" y="116" text-anchor="middle" font-size="10" fill="#B91C1C" font-weight="600">舊擴張區(避開)</text>
+              <!-- Scale ticks (100px = 4cm => 25px = 1cm) -->
+              <line x1="120" y1="138" x2="245" y2="138" stroke="#6E625D" stroke-width="1.5" />
+              <text x="182" y="133" text-anchor="middle" font-size="10" fill="#6E625D">比例尺：5 cm</text>
+              <!-- Needle A marker -->
+              <g id="markerA" transform="translate(165, 87)">
+                <circle r="11" fill="#DC2626" stroke="#fff" stroke-width="2.5" />
+                <text y="4" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">A</text>
+              </g>
+              <!-- Needle V marker -->
+              <g id="markerV" transform="translate(370, 87)">
+                <circle r="11" fill="#2563EB" stroke="#fff" stroke-width="2.5" />
+                <text y="4" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">V</text>
+              </g>
+            </svg>
+            <div class="legend-row">
+              <span><i class="dot" style="background:#DC2626;"></i>A 端引血針（距吻合口 ≥ 3 cm）</span>
+              <span><i class="dot" style="background:#2563EB;"></i>V 端回血針（順血流方向，與 A 端相距 ≥ 5 cm）</span>
+              <span>💡 點擊上方按鈕切換 A/V 端後，直接點擊血管圖即可更新穿刺位置</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permcath / CVC 專屬欄位 -->
+        <div id="cvcSection" style="display: none; margin-top: 12px;">
+          <div class="grid-3">
+            <div class="field">
+              <label>出口處 (Exit Site) 敷料與皮膚</label>
+              <select id="cvcExit" onchange="recalc()">
+                <option value="clean">乾燥完整無分泌物</option>
+                <option value="oozing">微滲血 / 敷料潮濕需更換</option>
+                <option value="erythema">紅腫 / 膿性分泌物 (疑似 CRBSI)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>導管回抽通暢度 (Patency)</label>
+              <select id="cvcPatency" onchange="recalc()">
+                <option value="smooth">A/V 端回抽順暢無阻力</option>
+                <option value="sluggish">單端抽吸阻力大 / 需調整姿勢</option>
+                <option value="occluded">無法回抽 (疑似血栓阻塞)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>抗凝封管液與無菌操作</label>
+              <select id="cvcLock" onchange="recalc()">
+                <option value="heparin_cleared">已先抽出舊封管液並棄置</option>
+                <option value="tpa_needed">需評估 Urokinase / Alteplase 通管</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="advice-list" id="accessAdvice"></div>
+      </section>
+    </div>
+
+    <!-- 右側：Focus Charting (DAR) 護理交班紀錄 -->
+    <aside class="sticky-panel">
+      <div class="card">
+        <div class="card-title">
+          <span>即時 Focus Charting（DAR）護理紀錄</span>
+          <button type="button" class="btn-coral" onclick="copyDAR()">複製貼入 NIS / HIS</button>
+        </div>
+        <textarea id="darOutput" readonly></textarea>
+        <div class="privacy-note">
+          <span>🔒</span>
+          <span>純前端本機運算，不儲存或傳輸任何病患個資，完全符合醫院資訊安全規範。</span>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast">已複製 Focus Charting (DAR) 護理紀錄</div>
+
+  <script>
+    let accessType = "AVF";
+    let pickMode = "A";
+    let posA = 165; // px along vessel (89..545), 25px = 1cm
+    let posV = 370;
+
+    function getNum(id) {
+      const v = parseFloat(document.getElementById(id).value);
+      return isNaN(v) ? 0 : v;
+    }
+
+    function setAccessType(type) {
+      accessType = type;
+      document.getElementById("tabAvf").classList.toggle("active", type === "AVF");
+      document.getElementById("tabAvg").classList.toggle("active", type === "AVG");
+      document.getElementById("tabCvc").classList.toggle("active", type === "Permcath");
+
+      const isCvc = type === "Permcath";
+      document.getElementById("avfSection").style.display = isCvc ? "none" : "block";
+      document.getElementById("cvcSection").style.display = isCvc ? "block" : "none";
+
+      if (isCvc) {
+        document.getElementById("accessSite").value = "右內頸靜脈 Right IJV";
+        document.getElementById("needleGauge").value = "CVC Lumen";
+      } else if (document.getElementById("needleGauge").value === "CVC Lumen") {
+        document.getElementById("accessSite").value = "左前臂 Radiocephalic";
+        document.getElementById("needleGauge").value = "16G";
+      }
+      recalc();
+    }
+
+    function setPickMode(mode) {
+      pickMode = mode;
+      document.getElementById("btnPickA").className = "mode-pill " + (mode === "A" ? "active-a" : "");
+      document.getElementById("btnPickV").className = "mode-pill " + (mode === "V" ? "active-v" : "");
+    }
+
+    function handleMapClick(evt) {
+      const svg = document.getElementById("armMap");
+      const rect = svg.getBoundingClientRect();
+      const scaleX = 600 / rect.width;
+      let clickX = (evt.clientX - rect.left) * scaleX;
+      clickX = Math.max(105, Math.min(540, Math.round(clickX)));
+
+      if (pickMode === "A") {
+        posA = clickX;
+        setPickMode("V");
+      } else {
+        posV = clickX;
+        setPickMode("A");
+      }
+      recalc();
+    }
+
+    function recalc() {
+      const dw = Math.max(25, getNum("dw"));
+      const preW = Math.max(25, getNum("preW"));
+      const hours = Math.max(1, getNum("hours"));
+      const extraMl = Math.max(0, getNum("extraMl"));
+      const sbp = getNum("sbp");
+      const dbp = getNum("dbp");
+      const hr = getNum("hr");
+      const temp = document.getElementById("dialysateTemp").value;
+
+      const symDyspnea = document.getElementById("symDyspnea").checked;
+      const symEdema = document.getElementById("symEdema").checked;
+      const symDizzy = document.getElementById("symDizzy").checked;
+      const symChest = document.getElementById("symChest").checked;
+      const mdNotified = document.getElementById("mdNotified").checked;
+
+      // UFR Calculations
+      const idwgKg = Math.max(0, preW - dw);
+      const idwgPct = (idwgKg / dw) * 100;
+      const netUfMl = Math.round(idwgKg * 1000);
+      const totalUfMl = netUfMl + extraMl;
+      const ufr = totalUfMl / hours / dw;
+      const map = Math.round(dbp + (sbp - dbp) / 3);
+
+      document.getElementById("valIdwg").textContent = `${idwgKg.toFixed(1)} kg`;
+      document.getElementById("subIdwg").textContent = `佔乾體重 ${idwgPct.toFixed(1)}%`;
+      document.getElementById("boxIdwg").className = "kpi-box " + (idwgPct > 5 ? "danger" : idwgPct > 4 ? "warn" : "ok");
+
+      document.getElementById("valTotalUf").textContent = `${totalUfMl} mL`;
+      document.getElementById("subUfBreak").textContent = `淨脫水 ${netUfMl} + 沖管 ${extraMl}`;
+
+      document.getElementById("valUfr").textContent = `${ufr.toFixed(1)}`;
+      document.getElementById("subUfrStatus").textContent = `mL/kg/hr (${ufr > 13 ? "高風險" : ufr > 10 ? "警戒" : "安全"})`;
+      document.getElementById("boxUfr").className = "kpi-box " + (ufr > 13 ? "danger" : ufr > 10 ? "warn" : "ok");
+
+      document.getElementById("valBp").textContent = `${sbp}/${dbp}`;
+      document.getElementById("subMap").textContent = `MAP ${map} mmHg • HR ${hr}`;
+      document.getElementById("boxBp").className = "kpi-box " + (sbp < 100 || sbp > 180 ? "danger" : "ok");
+
+      // UFR Nursing Guidance
+      const ufrNotes = [];
+      if (ufr > 13) {
+        ufrNotes.push({
+          type: "alert",
+          text: `🚨 超濾率高風險 (UFR = ${ufr.toFixed(1)} mL/kg/hr > 13)：極易發生透析中低血壓 (IDH) 與抽筋！請立即通報醫師確認是否下修單次脫水目標（建議單次上限 ≤ ${Math.round(dw * 13 * hours)} mL），並建議啟用階梯式脫水曲線 (UF Profile) 及低溫透析 (35.5–36.0°C)。`
+        });
+      } else if (ufr > 10) {
+        ufrNotes.push({
+          type: "warn",
+          text: `⚠️ 超濾率警戒區間 (UFR = ${ufr.toFixed(1)} mL/kg/hr，介於 10–13)：建議設定線性遞減脫水曲線 (UF Profile)、調降透析液溫度至 36.0°C、限制透析中進食水量，並每 30 分鐘密切監測血壓。`
+        });
+      } else {
+        ufrNotes.push({
+          type: "good",
+          text: `✅ 超濾率位於安全範圍 (UFR = ${ufr.toFixed(1)} mL/kg/hr ≤ 10)：依常規每小時測量血壓並觀察患者耐受度。`
+        });
+      }
+
+      if (sbp < 100 || symDizzy) {
+        ufrNotes.push({
+          type: "alert",
+          text: `🩺 上機前低血壓/頭暈風險 (BP ${sbp}/${dbp} mmHg)：上機前先採平躺或微頭低腳高姿勢，確認當日降壓藥是否已暫停服用，並向醫師確認是否需重新評估上調乾體重。`
+        });
+      }
+      if (symDyspnea || symEdema) {
+        ufrNotes.push({
+          type: "warn",
+          text: `🫁 體液過負荷徵象（端坐呼吸/水腫）：維持半坐臥姿上機，監測血氧 SpO2，並評估是否需調降乾體重。`
+        });
+      }
+      if ((ufr > 13 || sbp < 100 || symChest) && !mdNotified) {
+        ufrNotes.push({
+          type: "alert",
+          text: `📞 提醒：本個案具備高風險因子，請於上機前完成通報醫師並勾選「已通報值班/主治醫師確認脫水目標」。`
+        });
+      }
+      renderAdvice("ufrAdvice", ufrNotes);
+
+      // Update SVG Markers & Distance (25px = 1cm)
+      document.getElementById("markerA").setAttribute("transform", `translate(${posA}, 87)`);
+      document.getElementById("markerV").setAttribute("transform", `translate(${posV}, 87)`);
+      const distCm = Math.abs(posV - posA) / 25;
+      const distFromAnastCm = (posA - 75) / 25;
+      const distBadge = document.getElementById("distBadge");
+      const nearAneurysm = (Math.abs(posA - 290) < 28) || (Math.abs(posV - 290) < 28);
+
+      if (distCm < 5 || nearAneurysm || distFromAnastCm < 3) {
+        distBadge.className = "tag tag-coral";
+        distBadge.textContent = `A-V 距離：${distCm.toFixed(1)} cm（需調整穿刺位置！）`;
+      } else {
+        distBadge.className = "tag tag-sage";
+        distBadge.textContent = `A-V 針尖距離：${distCm.toFixed(1)} cm（安全 ≥ 5 cm）`;
+      }
+
+      // Access Assessment Guidance
+      const site = document.getElementById("accessSite").value;
+      const gauge = document.getElementById("needleGauge").value;
+      const qb = getNum("qb");
+      const accessNotes = [];
+
+      if (accessType !== "Permcath") {
+        const look = document.getElementById("lookStatus").value;
+        const thrill = document.getElementById("thrillStatus").value;
+        const bruit = document.getElementById("bruitStatus").value;
+        const elevate = document.getElementById("armElevate").value;
+        const ap = getNum("apPress");
+        const vp = getNum("vpPress");
+
+        if (thrill === "absent" || bruit === "absent") {
+          accessNotes.push({
+            type: "alert",
+            text: `🚨 緊急警示：觸診無震顫 / 聽診無雜音！高度懷疑血管通路急性血栓阻塞，嚴禁盲目穿刺，立即通報醫師安排緊急血管攝影/血栓清除術 (PTA/Thrombectomy)。`
+          });
+        } else if (thrill === "weak" || thrill === "systolic" || bruit === "high_pitch" || elevate === "persistent") {
+          accessNotes.push({
+            type: "warn",
+            text: `⚠️ 疑似血管通路狹窄徵象（搏動增強/高頻雜音/抬臂不塌陷）：上機後密切監測靜脈壓 (VP) 與動脈壓 (AP)，避免同一點反覆穿刺，並記錄交班建議醫師安排血管超音波或 PTA 評估。`
+          });
+        } else {
+          accessNotes.push({
+            type: "good",
+            text: `✅ 物理評估正常：${site} 震顫連續有力、低頻雜音清晰、抬臂塌陷正常。`
+          });
+        }
+
+        if (look === "redness") {
+          accessNotes.push({
+            type: "alert",
+            text: `🦠 穿刺處紅腫熱痛警示：避開紅腫區域穿刺，嚴格執行無菌消毒（2% Chlorhexidine / 優碘足時乾燥），留取血液培養並通報醫師開立抗生素評估。`
+          });
+        } else if (look === "hematoma") {
+          accessNotes.push({
+            type: "warn",
+            text: `🩹 局部血腫/瘀青：避開血腫處穿刺（前 24 小時冰敷、24 小時後溫敷），下機拔針後延長加壓止血時間並確認止血後仍有震顫。`
+          });
+        }
+
+        if (distCm < 5) {
+          accessNotes.push({
+            type: "alert",
+            text: `📏 穿刺針距不足 (${distCm.toFixed(1)} cm < 5 cm)：易造成血液再循環 (Recirculation) 導致透析廓清率下降，請點擊血管圖拉開 A/V 兩針間距至 5 cm 以上。`
+          });
+        }
+        if (distFromAnastCm < 3) {
+          accessNotes.push({
+            type: "warn",
+            text: `📏 A 端過近吻合口 (${distFromAnastCm.toFixed(1)} cm < 3 cm)：建議將 A 端穿刺點向近心端移動至距吻合口至少 3 cm 處。`
+          });
+        }
+        if (nearAneurysm) {
+          accessNotes.push({
+            type: "alert",
+            text: `⚠️ 穿刺點落於「舊擴張/假性動脈瘤變薄區」：皮膚薄弱易破皮大出血，請務必改採繩梯法移動至健康血管段穿刺！`
+          });
+        }
+        if (vp > 180 || ap < -200) {
+          accessNotes.push({
+            type: "warn",
+            text: `📊 機台壓力異常警示 (AP ${ap} / VP ${vp} mmHg)：確認針尖是否貼壁、管路有無折到，必要時適度下調 Qb 或調整針頭角度。`
+          });
+        }
+        if (gauge === "17G" && qb > 250) {
+          accessNotes.push({
+            type: "warn",
+            text: `💉 針號與流速提醒：17G 穿刺針搭配 Qb ${qb} mL/min 易產生過高負壓溶血，建議將 Qb 維持在 ≤ 250 mL/min 或改用 16G 穿刺針。`
+          });
+        }
+      } else {
+        const cvcExit = document.getElementById("cvcExit").value;
+        const cvcPatency = document.getElementById("cvcPatency").value;
+        const cvcLock = document.getElementById("cvcLock").value;
+
+        if (cvcExit === "erythema") {
+          accessNotes.push({
+            type: "alert",
+            text: `🦠 導管出口處紅腫/膿性分泌物：高度懷疑導管相關血流感染 (CRBSI)，依醫囑留取周邊與導管血液培養、更換無菌敷料並通報醫師。`
+          });
+        } else if (cvcExit === "oozing") {
+          accessNotes.push({
+            type: "warn",
+            text: `🩹 出口處敷料潮濕/微滲血：上機前執行無菌換藥並評估凝血功能與肝素劑量。`
+          });
+        } else {
+          accessNotes.push({
+            type: "good",
+            text: `✅ Permcath 出口處清潔乾燥完整，全程配戴外科口罩並落實接頭無菌消毒 (Scrub the hub ≥ 15 秒)。`
+          });
+        }
+
+        if (cvcPatency === "occluded" || cvcLock === "tpa_needed") {
+          accessNotes.push({
+            type: "alert",
+            text: `🚨 導管回抽受阻：嚴禁使用高壓暴力推注沖管（避免血栓脫落肺栓塞），通報醫師依醫囑執行 Urokinase / Alteplase 管腔溶栓。`
+          });
+        } else if (cvcPatency === "sluggish") {
+          accessNotes.push({
+            type: "warn",
+            text: `⚠️ 單端抽吸阻力大：協助患者調整頭頸部姿勢或微調體位，確認 A/V 管腔反接是否改善並記錄交班。`
+          });
+        }
+      }
+      renderAdvice("accessAdvice", accessNotes);
+
+      // Generate DAR Note
+      generateDAR({
+        dw, preW, idwgKg, idwgPct, netUfMl, extraMl, totalUfMl, ufr, hours,
+        sbp, dbp, map, hr, temp, symDyspnea, symEdema, symDizzy, symChest, mdNotified,
+        accessType, site, gauge, qb, distCm, ufrNotes, accessNotes
+      });
+    }
+
+    function renderAdvice(containerId, items) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = items.map(item =>
+        `<div class="advice-item ${item.type === "alert" ? "alert" : item.type === "warn" ? "warn" : "good"}">${item.text}</div>`
+      ).join("");
+    }
+
+    function generateDAR(d) {
+      const symptoms = [];
+      if (d.symDyspnea) symptoms.push("端坐呼吸/肺囉音");
+      if (d.symEdema) symptoms.push("下肢水腫≥2+");
+      if (d.symDizzy) symptoms.push("頭暈/低血壓史");
+      if (d.symChest) symptoms.push("胸悶不適");
+      const symText = symptoms.length ? symptoms.join("、") : "無明顯主訴不適，呼吸平順";
+
+      const accessSummary = d.accessType === "Permcath"
+        ? `雙腔靜脈導管 (${d.site})，Qb ${d.qb} mL/min`
+        : `${d.accessType} (${d.site})，使用 ${d.gauge} 穿刺針（繩梯法輪替，A-V 針尖距 ${d.distCm.toFixed(1)} cm），Qb ${d.qb} mL/min`;
+
+      const actionLines = [...d.ufrNotes, ...d.accessNotes]
+        .map(n => `- ${n.text.replace(/^[^一-龥A-Za-z0-9]+/, "")}`)
+        .join("
+");
+
+      const dar = `Focus: 血液透析上機前體液安全評估與血管通路護理 (Pre-HD UFR & Vascular Access)
+
+[D] Data (評估資料):
+- 體重與脫水參數：乾體重 ${d.dw.toFixed(1)} kg，上機前體重 ${d.preW.toFixed(1)} kg，IDWG ${d.idwgKg.toFixed(1)} kg (${d.idwgPct.toFixed(1)}%)；預計透析 ${d.hours} 小時，淨脫水 ${d.netUfMl} mL＋進食沖管 ${d.extraMl} mL＝總脫水目標 ${d.totalUfMl} mL，預估超濾率 UFR ${d.ufr.toFixed(1)} mL/kg/hr。
+- 生命徵象與症狀：上機前 BP ${d.sbp}/${d.dbp} mmHg (MAP ${d.map} mmHg)，HR ${d.hr} bpm；臨床評估：${symText}。
+- 血管通路評估：${accessSummary}。
+
+[A] Action (護理措施):
+- 依標準作業流程核對患者身分、醫囑處方、人工腎臟型號及透析液溫度 (${d.temp}°C)。
+${actionLines}
+- 通報狀態：${d.mdNotified ? "已於上機前通報醫師確認脫水目標與處置。" : "依常規處方執行上機。"}
+
+[R] Response (反應與追蹤計畫):
+- 順利完成上機治療，患者目前意識清楚、生命徵象穩定，穿刺處/導管固定妥善無滲血。
+- 後續持續每 30–60 分鐘監測血壓、脈搏及機台 AP/VP 壓力變化，衛教患者透析間期水分與鹽分控制及血管通路自我照護。`;
+
+      document.getElementById("darOutput").value = dar;
+    }
+
+    function loadHighRiskSample() {
+      document.getElementById("dw").value = "54.0";
+      document.getElementById("preW").value = "57.6";
+      document.getElementById("hours").value = "4.0";
+      document.getElementById("extraMl").value = "400";
+      document.getElementById("sbp").value = "98";
+      document.getElementById("dbp").value = "60";
+      document.getElementById("hr").value = "88";
+      document.getElementById("dialysateTemp").value = "35.5";
+      document.getElementById("symEdema").checked = true;
+      document.getElementById("symDizzy").checked = true;
+      document.getElementById("symDyspnea").checked = false;
+      document.getElementById("symChest").checked = false;
+      document.getElementById("mdNotified").checked = true;
+
+      setAccessType("AVF");
+      document.getElementById("accessSite").value = "左前臂 Radiocephalic";
+      document.getElementById("needleGauge").value = "16G";
+      document.getElementById("qb").value = "260";
+      document.getElementById("lookStatus").value = "normal";
+      document.getElementById("thrillStatus").value = "systolic";
+      document.getElementById("bruitStatus").value = "high_pitch";
+      document.getElementById("armElevate").value = "persistent";
+      document.getElementById("apPress").value = "-165";
+      document.getElementById("vpPress").value = "195";
+      posA = 180;
+      posV = 275; // 3.8cm -> triggers distance warning
+      recalc();
+    }
+
+    function resetForm() {
+      document.getElementById("dw").value = "60.0";
+      document.getElementById("preW").value = "62.1";
+      document.getElementById("hours").value = "4.0";
+      document.getElementById("extraMl").value = "300";
+      document.getElementById("sbp").value = "136";
+      document.getElementById("dbp").value = "78";
+      document.getElementById("hr").value = "76";
+      document.getElementById("dialysateTemp").value = "36.5";
+      document.getElementById("symDyspnea").checked = false;
+      document.getElementById("symEdema").checked = false;
+      document.getElementById("symDizzy").checked = false;
+      document.getElementById("symChest").checked = false;
+      document.getElementById("mdNotified").checked = false;
+
+      setAccessType("AVF");
+      document.getElementById("accessSite").value = "左前臂 Radiocephalic";
+      document.getElementById("needleGauge").value = "16G";
+      document.getElementById("qb").value = "280";
+      document.getElementById("lookStatus").value = "normal";
+      document.getElementById("thrillStatus").value = "continuous";
+      document.getElementById("bruitStatus").value = "low_pitch";
+      document.getElementById("armElevate").value = "collapse";
+      document.getElementById("apPress").value = "-140";
+      document.getElementById("vpPress").value = "135";
+      posA = 165;
+      posV = 370;
+      recalc();
+    }
+
+    function copyDAR() {
+      const textarea = document.getElementById("darOutput");
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(textarea.value);
+      const toast = document.getElementById("toast");
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    window.addEventListener("DOMContentLoaded", recalc);
+  </script>
+</body>
+</html>
